@@ -135,12 +135,52 @@ def getTransactionsByType(session, username):
     input(f"Transactions of type {transactionType} for {id_account} account from {username} have been shown successfully! Press \"Enter\" to continue...")
 # end def
 
+def displaySymbols():
+    print(f"Choose one of the following symbols:\n{', '.join(SYMBOLS)}")
+
+    print()
+
+    return input("Enter a symbol: ")
+# end def
+
+def setSymbol():
+    sys("clear")
+
+    symbol = displaySymbols()
+
+    sys("clear")
+
+    return symbol
+# end def
+
+def getTransactionsBySymbolType(session, username):
+    id_account = selectAccount(session, username)
+
+    symbol = setSymbol()
+
+    transactionType = setType()
+
+    (queryInADateRange, fromDate, toDate) = queryInADateRangeFn()
+
+    stmt = session.prepare(SELECT_TRANSACTIONS_BY_ACCOUNT_SYMBOL_TYPE_DATE_RANGE if queryInADateRange else SELECT_TRANSACTIONS_BY_ACCOUNT_SYMBOL_TYPE_DATE)
+
+    sys("clear")
+
+    result = session.execute(stmt, [id_account, symbol, transactionType, fromDate, toDate] if queryInADateRange else [id_account, symbol, transactionType])
+
+    for row in result: print(f"shares: {row.shares}, price: {round(row.price, 2)}, total: {round(row.total, 2)}")
+
+    print()
+
+    input(f"Transactions of type {transactionType} with the symbol {symbol} for {id_account} account from {username} have been shown successfully! Press \"Enter\" to continue...")
+# end def
+
 def triggerQuery(session, opt, username):
     sys("clear")
 
     if opt == 1: getTransactions(session, username)
     if opt == 2: getTransactionsByType(session, username)
-    # if opt == 3: getTransactionsByTypeSymbol(session, username)
+    if opt == 3: getTransactionsBySymbolType(session, username)
     # if opt == 4: getTransactionsBySymbol(session, username)
 
     sys("clear")
@@ -192,6 +232,25 @@ SELECT_TRANSACTIONS_BY_ACCOUNT_TYPE_DATE_RANGE = """
         AND id_transaction <= minTimeuuid(?);
 """
 
+# transactions_by_account_symbol_type_date
+SELECT_TRANSACTIONS_BY_ACCOUNT_SYMBOL_TYPE_DATE = """
+    SELECT type, symbol, shares, price, total
+    FROM transactions_by_account_symbol_type_date
+    WHERE id_account = ?
+        AND symbol = ?
+        AND type = ?;
+"""
+
+SELECT_TRANSACTIONS_BY_ACCOUNT_SYMBOL_TYPE_DATE_RANGE = """
+    SELECT type, symbol, shares, price, total
+    FROM transactions_by_account_symbol_type_date
+    WHERE id_account = ?
+        AND symbol = ?
+        AND type = ?
+        AND id_transaction >= maxTimeuuid(?)
+        AND id_transaction <= minTimeuuid(?);
+"""
+
 # global variables
 QUERY_OPTIONS = {
     1: "Query all records",
@@ -202,6 +261,12 @@ TYPE_OPTIONS = {
     1: "buy",
     2: "sell"
 }
+
+SYMBOLS = [
+    'ETSY', 'PINS', 'SE', 'SHOP', 'SQ', 'MELI', 'ISRG', 'DIS', 'BRK.A', 'AMZN',
+    'VOO', 'VEA', 'VGT', 'VIG', 'MBB', 'QQQ', 'SPY', 'BSV', 'BND', 'MUB',
+    'VSMPX', 'VFIAX', 'FXAIX', 'VTSAX', 'SPAXX', 'VMFXX', 'FDRXX', 'FGXX'
+]
 
 # logger
 log = logging.getLogger()
