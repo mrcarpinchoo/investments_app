@@ -1,0 +1,8 @@
+# ignores all .log files
+*.log
+
+# ignores .venv directory
+.venv/
+
+# ignores __pycache__ directory
+__pycache__/
