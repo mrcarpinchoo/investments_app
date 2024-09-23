@@ -98,6 +98,8 @@ def main():
             opt = int(input('Enter your choice: '))
 
             queries.triggerQuery(session, opt, username)
+
+            continue
         if opt == 4: data.bulkInsert(session)
         if opt == 5: username = setUsername()
 
